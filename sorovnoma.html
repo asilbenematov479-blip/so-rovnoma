@@ -239,7 +239,7 @@
     <div class="step active" data-step="0">
       <h1>Senga bir savol bor 🌸</h1>
       <p class="sub">bu bir necha daqiqa vaqtingni oladi — bu shunchaki bir necha qiziqarli savol, oxirida bilasan nima uchun so'raganimni.</p>
-      <input type="text" id="qName" placeholder="Ismingni yoz (ixtiyoriy)">
+      <input type="text" id="qName" name="Ism" autocomplete="off" placeholder="Ismingni yoz (ixtiyoriy)">
     </div>
 
     <div class="step" data-step="1">
@@ -294,7 +294,7 @@
       <div class="send-row">
         <button class="btn-send" id="sendBtn" type="button">Javoblarni yuborish 💌</button>
       </div>
-      <p class="note">Yuborish tugmasi email dasturingni ochadi — xat tayyor holda, faqat "yubor" tugmasini bosish kifoya.</p>
+      <p class="note">Javoblaring maxfiy tarzda so‘rovnoma egasiga yuboriladi.</p>
     </div>
 
   </div>
@@ -309,7 +309,7 @@
 <script>
 // ===== CONFIG =====
 // O'zingizning email manzilingizni shu yerga yozing:
-const RECEIVER_EMAIL = "asilbeknematov478@gmail.com";
+const FORMSPREE_URL = "https://formspree.io/f/xvkgpoqq";
 
 // ===== ambient floating hearts (single decorative layer) =====
 const heartsLayer = document.createElement('div');
@@ -418,11 +418,43 @@ function buildSummary(){
   });
 }
 
-document.getElementById('sendBtn').addEventListener('click', ()=>{
-  const lines = Object.entries(answers).map(([k,v])=> `${k}: ${v}`).join('\n');
-  const subject = encodeURIComponent("So'rovnoma javoblari");
-  const body = encodeURIComponent(lines);
-  window.location.href = `mailto:${RECEIVER_EMAIL}?subject=${subject}&body=${body}`;
+document.getElementById('sendBtn').addEventListener('click', async ()=>{
+  const sendBtn = document.getElementById('sendBtn');
+
+  // Formspree uchun barcha javoblarni field sifatida yuboramiz.
+  const formData = new FormData();
+  formData.append('_subject', "So'rovnoma javoblari");
+  formData.append('_language', 'uz');
+
+  Object.entries(answers).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Yuborilmoqda…";
+
+  try {
+    const response = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Formspree javob qaytarmadi');
+    }
+
+    sendBtn.textContent = "Yuborildi ✓";
+    sendBtn.style.opacity = "0.75";
+    sendBtn.style.cursor = "default";
+  } catch (error) {
+    console.error(error);
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Qayta yuborish ↻";
+    alert("Javoblarni yuborishda xatolik yuz berdi. Internetni tekshirib, qayta urinib ko‘r.");
+  }
 });
 
 showStep(0);
