@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kichik bir so'rovnoma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#2b1b2d;
+    --bg-card:#3d2740;
+    --bg-card-2:#472c4d;
+    --accent:#ff6f91;
+    --accent-2:#e85c7b;
+    --gold:#ffd166;
+    --text:#f5e9f0;
+    --text-muted:#c9a8c4;
+    --line:rgba(245,233,240,0.14);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,111,145,0.16), transparent 45%),
+      radial-gradient(circle at 85% 80%, rgba(255,209,102,0.10), transparent 40%),
+      var(--bg-deep);
+    color:var(--text);
+    font-family:'Manrope',sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* floating hearts, single orchestrated ambient layer */
+  .float-heart{
+    position:fixed;
+    top:110%;
+    font-size:20px;
+    opacity:0;
+    pointer-events:none;
+    color:var(--accent);
+    animation:rise 9s linear infinite;
+    filter:drop-shadow(0 0 6px rgba(255,111,145,0.35));
+  }
+  @keyframes rise{
+    0%{transform:translateY(0) rotate(0deg); opacity:0;}
+    8%{opacity:0.55;}
+    90%{opacity:0.35;}
+    100%{transform:translateY(-115vh) rotate(25deg); opacity:0;}
+  }
+
+  .card{
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:440px;
+    background:linear-gradient(160deg, var(--bg-card), var(--bg-card-2));
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:36px 30px 30px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.55);
+  }
+
+  .eyebrow-row{
+    display:flex;
+    gap:6px;
+    margin-bottom:22px;
+  }
+  .dot{
+    flex:1;
+    height:4px;
+    border-radius:3px;
+    background:var(--line);
+    transition:background 0.4s ease;
+  }
+  .dot.done{background:var(--accent);}
+
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:26px;
+    line-height:1.25;
+    margin:0 0 8px;
+  }
+  .sub{
+    color:var(--text-muted);
+    font-size:14.5px;
+    line-height:1.5;
+    margin:0 0 26px;
+  }
+
+  .step{display:none;}
+  .step.active{display:block; animation:fadein 0.35s ease;}
+  @keyframes fadein{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  .q-title{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-size:19px;
+    margin:0 0 18px;
+    line-height:1.4;
+  }
+
+  .choices{display:flex; flex-direction:column; gap:10px;}
+  .choice{
+    border:1px solid var(--line);
+    background:rgba(245,233,240,0.03);
+    color:var(--text);
+    padding:13px 16px;
+    border-radius:14px;
+    font-family:'Manrope',sans-serif;
+    font-size:15px;
+    text-align:left;
+    cursor:pointer;
+    transition:border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  }
+  .choice:hover{border-color:var(--accent); transform:translateX(2px);}
+  .choice.selected{
+    background:rgba(255,111,145,0.14);
+    border-color:var(--accent);
+  }
+
+  textarea, input[type="text"]{
+    width:100%;
+    background:rgba(245,233,240,0.05);
+    border:1px solid var(--line);
+    color:var(--text);
+    border-radius:14px;
+    padding:13px 16px;
+    font-family:'Manrope',sans-serif;
+    font-size:15px;
+    resize:none;
+  }
+  textarea:focus, input[type="text"]:focus, .choice:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
+  .slider-row{margin-top:6px;}
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--accent);
+  }
+  .slider-labels{
+    display:flex;
+    justify-content:space-between;
+    font-size:12.5px;
+    color:var(--text-muted);
+    margin-top:6px;
+  }
+  .slider-value{
+    text-align:center;
+    font-family:'Fraunces',serif;
+    font-size:32px;
+    margin:6px 0 4px;
+    color:var(--gold);
+  }
+
+  .nav-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:26px;
+    gap:10px;
+  }
+  button{
+    font-family:'Manrope',sans-serif;
+    font-weight:600;
+    font-size:14.5px;
+    border:none;
+    border-radius:12px;
+    padding:12px 20px;
+    cursor:pointer;
+    transition:transform 0.15s ease, opacity 0.15s ease;
+  }
+  button:active{transform:scale(0.97);}
+  .btn-primary{
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#2b1b2d;
+    margin-left:auto;
+  }
+  .btn-ghost{
+    background:transparent;
+    color:var(--text-muted);
+    border:1px solid var(--line);
+  }
+  .btn-primary:disabled{opacity:0.35; cursor:not-allowed;}
+
+  /* result screen */
+  .result-emoji{font-size:44px; margin-bottom:6px;}
+  .summary-box{
+    background:rgba(245,233,240,0.04);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    max-height:220px;
+    overflow-y:auto;
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--text-muted);
+    margin-bottom:20px;
+  }
+  .summary-box b{color:var(--text);}
+  .send-row{display:flex; flex-direction:column; gap:10px;}
+  .btn-send{
+    background:linear-gradient(135deg, var(--gold), #f2a65a);
+    color:#2b1b2d;
+  }
+  .note{
+    font-size:12px;
+    color:var(--text-muted);
+    text-align:center;
+    margin-top:4px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .float-heart{animation:none; display:none;}
+    .step.active{animation:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <div class="eyebrow-row" id="progressRow"></div>
+
+  <div id="quiz">
+
+    <div class="step active" data-step="0">
+      <h1>Senga bir savol bor 🌸</h1>
+      <p class="sub">bu bir necha daqiqa vaqtingni oladi — bu shunchaki bir necha qiziqarli savol, oxirida bilasan nima uchun so'raganimni.</p>
+      <input type="text" id="qName" name="Ism" autocomplete="off" placeholder="Ismingni yoz (ixtiyoriy)">
+    </div>
+
+    <div class="step" data-step="1">
+      <p class="q-title">Bo'sh vaqtingni qanday o'tkazishni yoqtirasan?</p>
+      <div class="choices" data-question="Bo'sh vaqt">
+        <button class="choice" type="button">Do'stlar bilan sayr qilib</button>
+        <button class="choice" type="button">Kino yoki serial ko'rib</button>
+        <button class="choice" type="button">Musiqa tinglab yoki insta ko'rin</button>
+        <button class="choice" type="button">Sayohat qilib yoki tashqarida yurib</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="2">
+      <p class="q-title">Kayfiyatingni ko'tarish uchun eng yaxshi narsa nima?</p>
+      <div class="choices" data-question="Kayfiyat ko'tarish">
+        <button class="choice" type="button">Yaxshi bir suhbat</button>
+        <button class="choice" type="button">Yoqimli musiqa</button>
+        <button class="choice" type="button">Shirinlik yoki mazali taom</button>
+        <button class="choice" type="button">Yolg'iz qolish</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="3">
+      <p class="q-title">Menga rostini aytsang — muloqotimiz senga qanday tuyuladi?</p>
+      <div class="slider-row">
+        <div class="slider-value" id="sliderVal">5</div>
+        <input type="range" id="qSlider" min="1" max="10" value="5">
+        <div class="slider-labels"><span>juda oddiy</span><span>juda yoqimli</span></div>
+      </div>
+    </div>
+
+    <div class="step" data-step="4">
+      <p class="q-title">Agar birga vaqt o'tkazsak, buni qanday tasavvur qilardin?</p>
+      <div class="choices" data-question="Birga vaqt">
+        <button class="choice" type="button">menga yoqmaysan</button>
+        <button class="choice" type="button">Sayr qilamiz</button>
+        <button class="choice" type="button">Kino ko'ramiz</button>
+        <button class="choice" type="button">Hali bilmayman, ammo qiziq bo'lardi</button>
+      </div>
+    </div>
+
+    <div class="step" data-step="5">
+      <p class="q-title">Menga aytmoqchi bo'lgan biror gaping bormi?</p>
+      <textarea id="qFree" rows="4" placeholder="Bu yerga yozishing mumkin (nimadir yoz dabba)..."></textarea>
+    </div>
+
+    <div class="step" data-step="6" id="finalStep">
+      <div class="result-emoji">🌷</div>
+      <h1>Rahmat senga!</h1>
+      <p class="sub">Man sani yaxshi ko'raman. Yuborish tugmasini bossang, ular menga yetadi.</p>
+      <div class="summary-box" id="summaryBox"></div>
+      <div class="send-row">
+        <button class="btn-send" id="sendBtn" type="button">Javoblarni yuborish 💌</button>
+      </div>
+      <p class="note">Javoblaring maxfiy tarzda so‘rovnoma egasiga yuboriladi.</p>
+    </div>
+
+  </div>
+
+  <div class="nav-row" id="navRow">
+    <button class="btn-ghost" id="backBtn" type="button">Orqaga</button>
+    <button class="btn-primary" id="nextBtn" type="button">Davom etish</button>
+  </div>
+
+</div>
+
+<script>
+// ===== CONFIG =====
+// O'zingizning email manzilingizni shu yerga yozing:
+const FORMSPREE_URL = "https://formspree.io/f/xvkgpoqq";
+
+// ===== ambient floating hearts (single decorative layer) =====
+const heartsLayer = document.createElement('div');
+document.body.appendChild(heartsLayer);
+const heartChars = ["♡","✿","♥"];
+for(let i=0;i<7;i++){
+  const el = document.createElement('div');
+  el.className = 'float-heart';
+  el.textContent = heartChars[i % heartChars.length];
+  el.style.left = (5 + Math.random()*90) + 'vw';
+  el.style.animationDelay = (Math.random()*9) + 's';
+  el.style.animationDuration = (7 + Math.random()*6) + 's';
+  el.style.fontSize = (14 + Math.random()*14) + 'px';
+  heartsLayer.appendChild(el);
+}
+
+// ===== quiz logic =====
+const steps = Array.from(document.querySelectorAll('.step'));
+const total = steps.length;
+let current = 0;
+const answers = {};
+
+const progressRow = document.getElementById('progressRow');
+for(let i=0;i<total-1;i++){
+  const d = document.createElement('div');
+  d.className = 'dot';
+  progressRow.appendChild(d);
+}
+const dots = Array.from(progressRow.children);
+
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const navRow = document.getElementById('navRow');
+
+function updateDots(){
+  dots.forEach((d,i)=> d.classList.toggle('done', i < current));
+}
+
+function showStep(i){
+  steps.forEach(s=>s.classList.remove('active'));
+  steps[i].classList.add('active');
+  backBtn.style.visibility = i===0 ? 'hidden' : 'visible';
+  navRow.style.display = i===total-1 ? 'none' : 'flex';
+  nextBtn.textContent = (i===total-2) ? "Yakunlash" : "Davom etish";
+  updateDots();
+}
+
+document.querySelectorAll('.choices').forEach(group=>{
+  group.querySelectorAll('.choice').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      group.querySelectorAll('.choice').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers[group.dataset.question] = btn.textContent;
+    });
+  });
+});
+
+const slider = document.getElementById('qSlider');
+const sliderVal = document.getElementById('sliderVal');
+slider.addEventListener('input', ()=>{
+  sliderVal.textContent = slider.value;
+  answers['Muloqot bahosi'] = slider.value + " / 10";
+});
+answers['Muloqot bahosi'] = slider.value + " / 10";
+
+nextBtn.addEventListener('click', ()=>{
+  const stepEl = steps[current];
+  const choiceGroup = stepEl.querySelector('.choices');
+  if(choiceGroup && !choiceGroup.querySelector('.selected')){
+    choiceGroup.style.outline = '1px solid var(--accent)';
+    choiceGroup.style.borderRadius = '14px';
+    setTimeout(()=> choiceGroup.style.outline = 'none', 500);
+    return;
+  }
+
+  if(current === 0){
+    const name = document.getElementById('qName').value.trim();
+    if(name) answers['Ism'] = name;
+  }
+  if(current === 5){
+    const free = document.getElementById('qFree').value.trim();
+    if(free) answers['Qo\'shimcha gap'] = free;
+  }
+
+  if(current < total-1){
+    current++;
+    showStep(current);
+    if(current === total-1) buildSummary();
+  }
+});
+
+backBtn.addEventListener('click', ()=>{
+  if(current>0){
+    current--;
+    showStep(current);
+  }
+});
+
+function buildSummary(){
+  const box = document.getElementById('summaryBox');
+  box.innerHTML = '';
+  Object.entries(answers).forEach(([k,v])=>{
+    const p = document.createElement('div');
+    p.innerHTML = `<b>${k}:</b> ${v}`;
+    box.appendChild(p);
+  });
+}
+
+document.getElementById('sendBtn').addEventListener('click', async ()=>{
+  const sendBtn = document.getElementById('sendBtn');
+
+  // Formspree uchun barcha javoblarni field sifatida yuboramiz.
+  const formData = new FormData();
+  formData.append('_subject', "So'rovnoma javoblari");
+  formData.append('_language', 'uz');
+
+  Object.entries(answers).forEach(([key, value]) => {
+    formData.append(key, value);
+  });
+
+  sendBtn.disabled = true;
+  sendBtn.textContent = "Yuborilmoqda…";
+
+  try {
+    const response = await fetch(FORMSPREE_URL, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Formspree javob qaytarmadi');
+    }
+
+    sendBtn.textContent = "Yuborildi ✓";
+    sendBtn.style.opacity = "0.75";
+    sendBtn.style.cursor = "default";
+  } catch (error) {
+    console.error(error);
+    sendBtn.disabled = false;
+    sendBtn.textContent = "Qayta yuborish ↻";
+    alert("Javoblarni yuborishda xatolik yuz berdi. Internetni tekshirib, qayta urinib ko‘r.");
+  }
+});
+
+showStep(0);
+</script>
+
+</body>
+</html>
